@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Icon Generator</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: Arial, sans-serif;
+    }
+
+    .icon-container {
+      margin: 20px;
+      text-align: center;
+    }
+
+    canvas {
+      border: 1px solid #ccc;
+      margin: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #4DBA87;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 10px;
+    }
+
+    .instructions {
+      max-width: 600px;
+      margin: 20px;
+      padding: 20px;
+      background-color: #f5f5f5;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>First Moments アイコン生成ツール</h1>
+
+  <div class="icon-container">
+    <h2>オリジナルSVGアイコン</h2>
+    <svg id="originalIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="200" height="200">
+      <!-- 背景円 -->
+      <circle cx="256" cy="256" r="256" fill="#4DBA87" />
+
+      <!-- モダンなカメラアイコン -->
+      <g>
+        <!-- カメラ本体 - より丸みを帯びたデザイン -->
+        <path
+          d="M128 176c-13.2 0-24 10.8-24 24v160c0 17.7 14.3 32 32 32h240c17.7 0 32-14.3 32-32V200c0-13.2-10.8-24-24-24h-40l-12-32c-3.5-9.3-12.5-16-22.6-16h-96.8c-10.1 0-19.1 6.7-22.6 16l-12 32H128z"
+          fill="#FFFFFF" />
+
+        <!-- カメラレンズ - グラデーション効果 -->
+        <circle cx="256" cy="280" r="72" fill="#E0E0E0" />
+        <circle cx="256" cy="280" r="56" fill="#CCCCCC" />
+        <circle cx="256" cy="280" r="40" fill="#AAAAAA" />
+
+        <!-- レンズの光沢 -->
+        <circle cx="236" cy="260" r="12" fill="#FFFFFF" opacity="0.7" />
+
+        <!-- カメラ上部のフラッシュ -->
+        <rect x="320" y="176" width="24" height="8" rx="4" fill="#FFEB3B" />
+
+        <!-- カメラのボタン -->
+        <circle cx="368" cy="216" r="8" fill="#FF5252" />
+
+        <!-- カメラのディテール -->
+        <rect x="144" y="200" width="32" height="8" rx="4" fill="#E0E0E0" />
+      </g>
+
+      <!-- ハート - より洗練されたデザイン -->
+      <path
+        d="M320 208c-8.8 0-16 7.2-16 16v16h-16c-8.8 0-16 7.2-16 16s7.2 16 16 16h16v16c0 8.8 7.2 16 16 16s16-7.2 16-16v-16h16c8.8 0 16-7.2 16-16s-7.2-16-16-16h-16v-16c0-8.8-7.2-16-16-16z"
+        fill="#FF5252" />
+
+      <!-- 装飾的な要素 - 小さな星 -->
+      <path d="M144 128l4 12h12l-10 8 4 12-10-8-10 8 4-12-10-8h12z" fill="#FFFFFF" opacity="0.8" />
+      <path d="M368 128l4 12h12l-10 8 4 12-10-8-10 8 4-12-10-8h12z" fill="#FFFFFF" opacity="0.8" />
+    </svg>
+  </div>
+
+  <div class="icon-container">
+    <h2>生成されたアイコン</h2>
+    <div id="canvasContainer"></div>
+    <button id="generateBtn">アイコンを生成</button>
+  </div>
+
+  <div class="instructions">
+    <h3>使用方法:</h3>
+    <ol>
+      <li>「アイコンを生成」ボタンをクリックして、各サイズのアイコンを生成します。</li>
+      <li>生成されたアイコンを右クリックして「名前を付けて画像を保存」を選択します。</li>
+      <li>各アイコンを適切なファイル名で保存します:
+        <ul>
+          <li>192x192 → android-chrome-192x192.png</li>
+          <li>512x512 → android-chrome-512x512.png</li>
+          <li>192x192 (マスカブル) → android-chrome-maskable-192x192.png</li>
+          <li>512x512 (マスカブル) → android-chrome-maskable-512x512.png</li>
+          <li>180x180 → apple-touch-icon.png</li>
+          <li>16x16 → favicon-16x16.png</li>
+          <li>32x32 → favicon-32x32.png</li>
+        </ul>
+      </li>
+      <li>保存したアイコンを <code>public/img/icons/</code> ディレクトリに配置します。</li>
+    </ol>
+  </div>
+
+  <script>
+    document.getElementById('generateBtn').addEventListener('click', function () {
+      const sizes = [
+        { width: 16, height: 16, name: 'favicon-16x16' },
+        { width: 32, height: 32, name: 'favicon-32x32' },
+        { width: 192, height: 192, name: 'android-chrome-192x192' },
+        { width: 512, height: 512, name: 'android-chrome-512x512' },
+        { width: 192, height: 192, name: 'android-chrome-maskable-192x192' },
+        { width: 512, height: 512, name: 'android-chrome-maskable-512x512' },
+        { width: 180, height: 180, name: 'apple-touch-icon' }
+      ];
+
+      const container = document.getElementById('canvasContainer');
+      container.innerHTML = '';
+
+      const svgElement = document.getElementById('originalIcon');
+      const svgData = new XMLSerializer().serializeToString(svgElement);
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const svgUrl = URL.createObjectURL(svgBlob);
+
+      sizes.forEach(size => {
+        const img = new Image();
+        img.onload = function () {
+          const canvas = document.createElement('canvas');
+          canvas.width = size.width;
+          canvas.height = size.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, size.width, size.height);
+
+          const div = document.createElement('div');
+          div.style.display = 'inline-block';
+          div.style.margin = '10px';
+          div.style.textAlign = 'center';
+
+          const label = document.createElement('p');
+          label.textContent = `${size.name} (${size.width}x${size.height})`;
+
+          div.appendChild(canvas);
+          div.appendChild(label);
+          container.appendChild(div);
+        };
+        img.src = svgUrl;
+      });
+    });
+  </script>
+</body>
+
+</html>
